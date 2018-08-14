@@ -466,7 +466,7 @@ class Gateway:
         """
         receiver = data.get("Receiver")
         sender = data.get("Sender")
-        asset_type = data.get("MessageBody").get("AssetType")
+        asset_type = data.get("AssetType")
         receiver_pk = utils.get_public_key(receiver)
         # to spv
         if utils.check_is_spv(receiver):
