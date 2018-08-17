@@ -378,7 +378,7 @@ def make_edge_data(u_node, v_node):
     }
 
 def asset_type_magic_patch(asset_type, data):
-    magic = data.get("Magic") if isinstance(data, dict) else data
+    magic = data.get("NetMagic") if isinstance(data, dict) else data
     if magic: 
         asset_type = asset_type + magic
     return asset_type
