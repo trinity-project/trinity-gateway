@@ -220,7 +220,7 @@ class MessageMake:
             "SyncType": sync_type,
             "Sender": sender,
             "AssetType": kwargs.get("asset_type"),
-            "NetMagic": kwargs.get("NetMagic"),
+            "NetMagic": kwargs.get("magic"),
             "Broadcast": kwargs.get("broadcast"),
             "Source": kwargs.get("source"),
             "Target": kwargs.get("target"),
