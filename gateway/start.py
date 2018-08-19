@@ -3,10 +3,11 @@ import time
 import os
 from gateway.gateway import gateway_singleton
 from .config import cg_debug
+import logging
+from gateway.glog import tcp_logger,wst_logger,rpc_logger
 
 if __name__ == "__main__":
-    import logging
-    from gateway.glog import tcp_logger,wst_logger,rpc_logger
+
     logging.getLogger().disabled = True
     logging.getLogger(name="jsonrpcclient.client.request").disabled = True
     logging.getLogger(name="jsonrpcclient.client.response").disabled = True
@@ -26,6 +27,6 @@ if __name__ == "__main__":
         gateway_singleton.clearn()
     except OSError as ex:
         print(ex.args[1])
-    finally:
+    else:
         gateway_singleton.close()
         # pass
