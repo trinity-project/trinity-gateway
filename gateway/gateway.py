@@ -262,7 +262,7 @@ class Gateway:
             rpc_logger.info("Get the wallet sync channel message:\n{}".format(data))
             channel_founder = data["MessageBody"]["Founder"]
             channel_receiver = data["MessageBody"]["Receiver"]
-            asset_type = list(data["MessageBody"]["Balance"][channel_founder].items())[0][0]
+            asset_type = data["AssetType"]
             channel_name = data["MessageBody"]["ChannelName"]
             magic = data.get("NetMagic")
             net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
