@@ -4,7 +4,7 @@ from aiohttp import web, ClientSession
 from jsonrpcserver.aio import methods
 from jsonrpcclient.aiohttp_client import aiohttpClient
 from jsonrpcclient.http_client import HTTPClient
-from glog import rpc_logger
+from gateway.glog import rpc_logger
 
 @methods.add
 async def ShowNodeList(params):

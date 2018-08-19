@@ -1,12 +1,12 @@
 # coding: utf-8
 import time
 import os
-from gateway import gateway_singleton
-from config import cg_debug
+from gateway.gateway import gateway_singleton
+from .config import cg_debug
 
 if __name__ == "__main__":
     import logging
-    from glog import tcp_logger,wst_logger,rpc_logger
+    from gateway.glog import tcp_logger,wst_logger,rpc_logger
     logging.getLogger().disabled = True
     logging.getLogger(name="jsonrpcclient.client.request").disabled = True
     logging.getLogger(name="jsonrpcclient.client.response").disabled = True

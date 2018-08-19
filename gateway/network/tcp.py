@@ -1,8 +1,8 @@
 # coding: utf-8
 from asyncio import Protocol, get_event_loop
-from config import cg_end_mark, cg_bytes_encoding, cg_tcp_addr, cg_debug_multi_ports
-from utils import request_handle_result
-from glog import tcp_logger
+from gateway.config import cg_end_mark, cg_bytes_encoding, cg_tcp_addr, cg_debug_multi_ports
+from gateway.utils import request_handle_result
+from gateway.glog import tcp_logger
 import struct
 # from datagram import Datagram
 

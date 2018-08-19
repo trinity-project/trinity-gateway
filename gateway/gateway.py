@@ -3,12 +3,13 @@ import time
 import os
 import json
 import utils
-from _wallet import WalletClient
-from topo import Nettopo
-from network import Network
-from message import Message, MessageMake
-from glog import tcp_logger, wst_logger, rpc_logger
-from config import cg_public_ip_port, cg_wsocket_addr
+
+from ._wallet import WalletClient
+from .topo import Nettopo
+from .network import Network
+from .message import Message, MessageMake
+from .glog import tcp_logger, wst_logger, rpc_logger
+from .config import cg_public_ip_port, cg_wsocket_addr
 
 class Gateway:
     """
@@ -53,7 +54,9 @@ class Gateway:
         # first check the receiver is self or not
         if msg_type == "PaymentLink":
             owned, wallet_state = utils.check_is_owned_wallet(receiver, self.wallet_clients)
-            if not (owned and wallet_state): return
+            if not (owned and wallet_state):
+                print('wallet is not found under this gateway. owned: {}, wallet state: {}'.format(owned, wallet_state))
+                return
             wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
             Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
         elif msg_type in Message.get_tx_msg_types():
