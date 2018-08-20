@@ -2,7 +2,7 @@
 """
 module for multi wallets and asset
 """
-from gateway.config import cg_public_ip_port, cg_remote_jsonrpc_addr
+from config import cg_public_ip_port, cg_remote_jsonrpc_addr
 
 class _Asset:
     def __init__(self, **kwargs):

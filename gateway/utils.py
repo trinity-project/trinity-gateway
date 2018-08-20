@@ -4,20 +4,14 @@ gateway utils
 """
 import json
 import re
-from .config import cg_end_mark, \
-    cg_bytes_encoding, \
-    cg_wsocket_addr, \
-    cg_public_ip_port, \
-    cg_local_jsonrpc_addr
+from config import cg_end_mark, cg_bytes_encoding, cg_wsocket_addr,\
+ cg_tcp_addr, cg_public_ip_port, cg_remote_jsonrpc_addr, cg_local_jsonrpc_addr
 import os
 import sys
-from gateway.network.network import Network
-from gateway.message import MessageMake
-
-
 path = os.getcwd().replace("/gateway", "")
 sys.path.append(path)
-
+# from model.channel_model import APIChannel
+# from model.node_model import APINode
 import struct
 
 request_handle_result = {
@@ -283,7 +277,8 @@ def _make_router(path, full_path, net_topo):
     return router
 
 def _search_target_wallets(receiver, asset_type, magic):
-
+    from network import Network
+    from message import MessageMake
     addr = (get_addr(receiver)[0], cg_local_jsonrpc_addr[1])
     message = MessageMake.make_search_target_wallet(get_public_key(receiver), asset_type, magic)
     response = Network.send_msg_with_jsonrpc_sync("Search", addr, message)

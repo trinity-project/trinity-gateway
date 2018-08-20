@@ -1,11 +1,8 @@
 # coding: utf-8
 import websockets
-from asyncio import sleep
-from gateway.glog import wst_logger
-from gateway.gateway import gateway_singleton
-
-
-class WsocketService(object):
+from asyncio import sleep,CancelledError
+from glog import wst_logger
+class WsocketService:
     """
     websocket server
     not need instance
@@ -38,7 +35,7 @@ class WsocketService(object):
         the callback that receive the client msg
         """
         # every client first connected the server
-
+        from gateway import gateway_singleton
         wst_logger.info('client {} connected'.format(con.remote_address))
         gateway_singleton.handle_spv_make_connection(con)
         while True:

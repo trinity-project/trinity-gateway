@@ -3,9 +3,10 @@ from functools import wraps
 import time
 import json
 import networkx as nx
-from .spvtable import SPVHashTable
+from spvtable import SPVHashTable
 from networkx.readwrite import json_graph
-from gateway import utils
+from config import cg_public_ip_port
+import utils
 
 """
 message = {
