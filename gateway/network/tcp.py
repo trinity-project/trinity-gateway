@@ -1,7 +1,6 @@
 # coding: utf-8
 from asyncio import Protocol, get_event_loop
-from gateway.config import cg_end_mark, cg_bytes_encoding, cg_tcp_addr, cg_debug_multi_ports
-from gateway.utils import request_handle_result
+from gateway.config import cg_tcp_addr, cg_debug_multi_ports
 from gateway.glog import tcp_logger
 import struct
 from gateway.gateway import gateway_singleton
