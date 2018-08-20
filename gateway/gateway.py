@@ -2,11 +2,11 @@
 import time
 import os
 import json
-import utils
 
+from gateway import utils
 from ._wallet import WalletClient
 from .topo import Nettopo
-from .network import Network
+from gateway.network import Network
 from .message import Message, MessageMake
 from .glog import tcp_logger, wst_logger, rpc_logger
 from gateway.config import cg_public_ip_port, cg_wsocket_addr

@@ -6,3 +6,5 @@ jsonrpcclient==2.5.2
 jsonrpcserver==3.5.3
 requests==2.18.4
 websockets==4.0.1
+psutil==5.4.5
+matplotlib==2.2.2

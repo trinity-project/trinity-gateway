@@ -1,7 +1,7 @@
 # coding: utf-8
 import websockets
 from asyncio import sleep,CancelledError
-from glog import wst_logger
+from gateway.glog import wst_logger
 class WsocketService:
     """
     websocket server

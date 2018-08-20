@@ -1,6 +1,4 @@
 # coding: utf-8
-import time
-import os
 from gateway.gateway import gateway_singleton
 from gateway.config import cg_debug
 import logging
