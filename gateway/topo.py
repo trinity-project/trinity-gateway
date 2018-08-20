@@ -6,7 +6,7 @@ import networkx as nx
 from spvtable import SPVHashTable
 from networkx.readwrite import json_graph
 from config import cg_public_ip_port
-import utils
+from gateway import utils
 
 """
 message = {
