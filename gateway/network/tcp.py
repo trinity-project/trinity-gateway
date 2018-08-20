@@ -4,7 +4,7 @@ from gateway.config import cg_end_mark, cg_bytes_encoding, cg_tcp_addr, cg_debug
 from gateway.utils import request_handle_result
 from gateway.glog import tcp_logger
 import struct
-from gateway import gateway_singleton
+from gateway.gateway import gateway_singleton
 from gateway.utils import get_public_key, \
     del_dict_item_by_value, \
     get_addr

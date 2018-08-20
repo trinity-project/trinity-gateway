@@ -2,7 +2,7 @@
 import websockets
 from asyncio import sleep
 from gateway.glog import wst_logger
-from gateway import gateway_singleton
+from gateway.gateway import gateway_singleton
 
 
 class WsocketService(object):
