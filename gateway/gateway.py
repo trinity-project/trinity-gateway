@@ -2,7 +2,7 @@
 import time
 import os
 import json
-from gateway import utils
+import utils
 from _wallet import WalletClient
 from topo import Nettopo
 from network import Network
