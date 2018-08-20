@@ -5,16 +5,16 @@ the module gather all protocols for trinity network communication
 import asyncio
 import uvloop
 import json
-from gateway.network.tcp import TcpService
-from gateway.network.jsonrpc import AsyncJsonRpc
-from gateway.network.wsocket import WsocketService
-from gateway.config import cg_tcp_addr, \
+from .tcp import TcpService
+from .jsonrpc import AsyncJsonRpc
+from .wsocket import WsocketService
+from gateway import cg_tcp_addr, \
     cg_wsocket_addr,  \
     cg_local_jsonrpc_addr,\
     cg_reused_tcp_connection
 from asyncio import ensure_future
-from gateway.utils import encode_bytes
-from gateway.glog import tcp_logger, wst_logger
+from gateway import encode_bytes
+from gateway import tcp_logger, wst_logger
 
 
 class Network(object):
