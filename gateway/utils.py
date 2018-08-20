@@ -4,8 +4,11 @@ gateway utils
 """
 import json
 import re
-from gateway.config import cg_end_mark, cg_bytes_encoding, cg_wsocket_addr,\
- cg_tcp_addr, cg_public_ip_port, cg_remote_jsonrpc_addr, cg_local_jsonrpc_addr
+from .config import cg_end_mark, \
+    cg_bytes_encoding, \
+    cg_wsocket_addr, \
+    cg_public_ip_port, \
+    cg_local_jsonrpc_addr
 import os
 import sys
 path = os.getcwd().replace("/gateway", "")

@@ -1,5 +1,5 @@
 # coding: utf-8
-from gateway.gateway import gateway_singleton
+from gateway import gateway_singleton
 from gateway.config import cg_debug
 import logging
 from gateway.glog import tcp_logger,wst_logger,rpc_logger
