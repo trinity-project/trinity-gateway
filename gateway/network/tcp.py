@@ -4,6 +4,10 @@ from gateway.config import cg_end_mark, cg_bytes_encoding, cg_tcp_addr, cg_debug
 from gateway.utils import request_handle_result
 from gateway.glog import tcp_logger
 import struct
+from gateway import gateway_singleton
+from gateway.utils import get_public_key, \
+    del_dict_item_by_value, \
+    get_addr
 # from datagram import Datagram
 
 class ProtocolManage():
@@ -82,7 +86,7 @@ class TProtocol(Protocol):
             body = self.received[self.header_size:self.header_size+body_size]
             tcp_logger.info("receive %d bytes message from %s", body_size, self.get_peername())
             tcp_logger.debug(">>>> %s <<<<", body)
-            from gateway import gateway_singleton
+
             result = gateway_singleton.handle_node_request(self, body)
             # package splicing or clan the data_buffer:self.received
             self.received = self.received[self.header_size+body_size:]
@@ -100,8 +104,7 @@ class TProtocol(Protocol):
             tcp_manager.close_times += 1
             self.state = "closed"
             tcp_logger.info("the connection %s was closed", peername)
-        from gateway import gateway_singleton
-        from utils import del_dict_item_by_value
+
         if self.is_wallet_cli and not exc:
             gateway_singleton.handle_wallet_cli_off_line(self)
         if self in list(gateway_singleton.tcp_pk_dict.values()) and not exc:
@@ -134,8 +137,7 @@ class TcpService:
         then communicate with the exist connection
         or create a new connection
         """
-        from gateway import gateway_singleton
-        from utils import get_public_key
+
         pk = get_public_key(url)
         exist_protocol = gateway_singleton.tcp_pk_dict.get(pk)
         if exist_protocol and exist_protocol.state == "connected":
@@ -149,8 +151,6 @@ class TcpService:
         """
         :param bdata: bytes type
         """
-        from gateway import gateway_singleton
-        from utils import get_addr, get_public_key
         addr = get_addr(url)
         pk = get_public_key(url)
         result = await get_event_loop().create_connection(TProtocol, addr[0], addr[1])

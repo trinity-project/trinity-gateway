@@ -5,50 +5,42 @@ from jsonrpcserver.aio import methods
 from jsonrpcclient.aiohttp_client import aiohttpClient
 from jsonrpcclient.http_client import HTTPClient
 from gateway.glog import rpc_logger
+from gateway import gateway_singleton
 
 @methods.add
 async def ShowNodeList(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('ShowNodeList', params)
 
 @methods.add
 async def JoinNet(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('JoinNet', params)
 
 @methods.add
 async def Search(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('Search', params)
 
 @methods.add
 async def SyncWalletData(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('SyncWalletData', params)
 
 @methods.add
 async def SyncChannel(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('SyncChannel', params)
 
 @methods.add
 async def SyncBlock(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('SyncBlock', params)
 
 @methods.add
 async def TransactionMessage(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('TransactionMessage', params)
 
 @methods.add
 async def GetRouterInfo(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request('GetRouterInfo', params)
 
 @methods.add
 async def CloseWallet(params):
-    from gateway import gateway_singleton
     return gateway_singleton.handle_wallet_request("CloseWallet", params)
     
 class AsyncJsonRpc():
@@ -82,7 +74,6 @@ class AsyncJsonRpc():
             client = aiohttpClient(session, endpoint)
             rpc_logger.info("--> send msg to wallet_cli{}".format(addr))
             response = await client.request(method, params)
-            from gateway import gateway_singleton
             gateway_singleton.handle_wallet_response(method, response)
 
     @staticmethod

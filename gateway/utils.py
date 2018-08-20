@@ -13,8 +13,7 @@ import os
 import sys
 path = os.getcwd().replace("/gateway", "")
 sys.path.append(path)
-# from model.channel_model import APIChannel
-# from model.node_model import APINode
+
 import struct
 
 request_handle_result = {
@@ -280,8 +279,8 @@ def _make_router(path, full_path, net_topo):
     return router
 
 def _search_target_wallets(receiver, asset_type, magic):
-    from network import Network
-    from message import MessageMake
+    from gateway.network import Network
+    from gateway.message import MessageMake
     addr = (get_addr(receiver)[0], cg_local_jsonrpc_addr[1])
     message = MessageMake.make_search_target_wallet(get_public_key(receiver), asset_type, magic)
     response = Network.send_msg_with_jsonrpc_sync("Search", addr, message)
