@@ -6,7 +6,7 @@ import json
 from gateway import utils
 from ._wallet import WalletClient
 from .topo import Nettopo
-from gateway.network import Network
+from gateway.network.network import Network
 from .message import Message, MessageMake
 from .glog import tcp_logger, wst_logger, rpc_logger
 from .config import cg_public_ip_port, cg_wsocket_addr
