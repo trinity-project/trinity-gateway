@@ -4,7 +4,7 @@ import time
 import json
 import networkx as nx
 from networkx.readwrite import json_graph
-from .config import cg_public_ip_port
+from gateway.config import cg_public_ip_port
 from gateway import utils
 
 """

@@ -2,7 +2,7 @@
 import logging
 import logging.handlers
 import sys
-from .config import cg_debug
+from gateway.config import cg_debug
 """
 loggers for gateway
 """

@@ -2,7 +2,7 @@
 import time
 import os
 from gateway.gateway import gateway_singleton
-from .config import cg_debug
+from gateway.config import cg_debug
 import logging
 from gateway.glog import tcp_logger,wst_logger,rpc_logger
 

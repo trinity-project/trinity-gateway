@@ -9,7 +9,7 @@ from .topo import Nettopo
 from .network import Network
 from .message import Message, MessageMake
 from .glog import tcp_logger, wst_logger, rpc_logger
-from .config import cg_public_ip_port, cg_wsocket_addr
+from gateway.config import cg_public_ip_port, cg_wsocket_addr
 
 class Gateway:
     """
