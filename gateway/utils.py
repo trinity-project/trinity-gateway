@@ -352,7 +352,7 @@ def search_route_for_wallet(sender, receiver, net_topo, asset_type, magic):
         # sender and receiver is attached same gateway(same ip)
         # search target wallet from local spv table
         if get_addr(sender)[0] == get_addr(receiver)[0]:
-            for key in net_topo.spv_table.find_keys(receiver_pk):
+            for key in net_topo.spv_table.find_keys(rev_pk):
                 # check wallet is on-line
                 if net_topo.get_node_dict(key)["Status"]:
                     target_wallet_pks.append(key)
