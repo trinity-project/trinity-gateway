@@ -243,6 +243,8 @@ class Gateway:
             if not (owned and wallet_state):
                 return "wallet public key check failed"
             net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
+            print('======= Netopos: {}'.format(self.net_topos))
+            print('======= Netopos keys {}'.format(utils.asset_type_magic_patch(asset_type, magic)))
             route = utils.search_route_for_wallet(sender, receiver, net_topo, asset_type, magic)
             return json.dumps(MessageMake.make_ack_router_info_msg(route))
         elif method == "TransactionMessage":
