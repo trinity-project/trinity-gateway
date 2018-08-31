@@ -208,6 +208,8 @@ class Gateway:
                 data = net_topo.spv_table.to_json()
                 message = MessageMake.make_ack_search_spv(data)
             return json.dumps(message)
+
+        magic = data.get("NetMagic") if data.get("NetMagic") else ""
         if method == "SyncWalletData":
             rpc_logger.info("Get the wallet sync data:\n{}".format(data))
             body = data.get("MessageBody")
@@ -331,6 +333,7 @@ class Gateway:
                         )
                         self.sync_channel_route_to_peer(message)
             else:
+                magic = data.get("NetMagic") if data.get("NetMagic") else ""
                 channel_peer, channel_source = utils.select_channel_peer_source(channel_founder, channel_receiver)
                 sid = utils.get_public_key(channel_source)
                 tid = utils.get_public_key(channel_peer)
