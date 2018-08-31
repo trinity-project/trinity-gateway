@@ -99,7 +99,7 @@ class AsyncJsonRpc():
             return res
 
 if __name__ == "__main__":
-    addr = ("0.0.0.0", 8077)
+    addr = ("0.0.0.0", 8177)
     import json
     AsyncJsonRpc.jsonrpc_request_sync("Search", json.dumps({}), addr)
     # message = {

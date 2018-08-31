@@ -590,7 +590,7 @@ class Gateway:
             clis = utils.get_wallet_clis()
         except Exception:
             clis = []
-        # clis.append("47.254.39.10:20556")
+        # clis.append("47.254.39.10:21556")
         for cli in clis:
             try:
                 ip, port = cli.split(":")

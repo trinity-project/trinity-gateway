@@ -20,7 +20,7 @@
             "Publickey": "pk1", 
             "alias": "TrinityNode", 
             "AutoCreate": true, 
-            "Ip": "localhost:20556",
+            "Ip": "localhost:21556",
             "MaxChannel": 100,
             "Channel": {
                 "TNC": {
