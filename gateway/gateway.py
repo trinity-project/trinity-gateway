@@ -272,9 +272,11 @@ class Gateway:
             asset_type = list(data["MessageBody"]["Balance"][channel_founder].items())[0][0]
             channel_name = data["MessageBody"]["ChannelName"]
             magic = data.get("NetMagic")
-            net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
+            network_trait = utils.asset_type_magic_patch(asset_type, magic)
+            net_topo = self.net_topos.get(network_trait)
+            is_same_gateway = utils.check_is_same_gateway(channel_founder, channel_receiver)
             # founder and receiver are attached the same gateway
-            if utils.check_is_same_gateway(channel_founder, channel_receiver):
+            if is_same_gateway:
                 fid = utils.get_public_key(channel_founder)
                 rid = utils.get_public_key(channel_receiver)
                 if msg_type == "AddChannel":
@@ -301,7 +303,7 @@ class Gateway:
                         # excepts=[fid, rid]
                         excepts = list(net_topo.nids)
                     )
-                    self.sync_channel_route_to_peer(message)
+                    self.sync_channel_route_to_peer(message, True)
                 elif msg_type == "UpdateChannel":
                     if not net_topo: return
                     founder_balance = data["MessageBody"]["Balance"][channel_founder][asset_type]
@@ -335,7 +337,7 @@ class Gateway:
                             target=channel_receiver,
                             excepts = list(net_topo.nids)
                         )
-                        self.sync_channel_route_to_peer(message)
+                        self.sync_channel_route_to_peer(message, True)
             else:
                 magic = data.get("NetMagic") if data.get("NetMagic") else ""
                 channel_peer, channel_source = utils.select_channel_peer_source(channel_founder, channel_receiver)
@@ -345,7 +347,7 @@ class Gateway:
                     wallets = utils.get_all_active_wallet_dict(self.wallet_clients)
                     s_wallet = wallets[sid]
                     s_wallet.channel_balance[channel_name] = data["MessageBody"]["Balance"][channel_source][asset_type]
-                    Nettopo.add_or_update(self.net_topos, asset_type, magic, s_wallet)
+                    Nettopo.add_or_update(self.net_topos, asset_type, magic, s_wallet, channel_peer)
                     net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
                 # peer is spv
                 if utils.check_is_spv(channel_peer):
@@ -404,6 +406,9 @@ class Gateway:
                             excepts = [tid] + list(net_topo.nids)
                         )
                         self.sync_channel_route_to_peer(message)
+
+                    net_topo.remove_neighbor(network_trait, channel_peer)
+
         elif method == "CloseWallet":
             cli_ip = data.get("Ip")
             magic = data.get("NetMagic") if data.get("NetMagic") else ""
@@ -422,13 +427,14 @@ class Gateway:
     def handle_spv_lost_connection(self, websocket):
         pass
 
-    def sync_channel_route_to_peer(self, message):
+    def sync_channel_route_to_peer(self, message, same_gateway=False):
         """
         :param except_peer: str type (except peer url)
         """
         asset_type = message.get("AssetType")
         magic = message.get("NetMagic")
-        net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
+        network_trait = utils.asset_type_magic_patch(asset_type, magic)
+        net_topo = self.net_topos.get(network_trait)
         sender = message.get("Sender")
         if message.get("SyncType") == "add_whole_graph":
             message["MessageBody"] = net_topo.to_json()
@@ -451,6 +457,18 @@ class Gateway:
                 message["Excepts"] = list(union_excepts)
                 message["Receiver"] = receiver
                 Network.send_msg_with_tcp(receiver, message)
+
+        if not same_gateway:
+            return
+        ext_neighbors = net_topo.get_neighbors(network_trait, {})
+        for ip, node_attr in ext_neighbors.items():
+            for neighbor in node_attr.links:
+                receiver = neighbor + "@" + ip
+                tcp_logger.info("=== sync to the neighbor: {} ===".format(neighbor))
+                message["Excepts"] = list(union_excepts)
+                message["Receiver"] = receiver
+                Network.send_msg_with_tcp(receiver, message)
+
 
     def resume_channel_from_db(self):
         for pk, wallet in self.wallets.items():
