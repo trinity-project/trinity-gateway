@@ -185,9 +185,9 @@ class NetNeighborHash(object):
     def get_ext_neighbor(self, net_id):
         if not net_id:
             gw_logger.error('Invalid network ID: {}'.format(net_id))
-            return
+            return {}
 
-        return self.neighbors_hash.get(net_id)
+        return self.neighbors_hash.get(net_id, {})
 
 
 class Nettopo:

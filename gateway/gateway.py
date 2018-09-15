@@ -290,7 +290,7 @@ class Gateway:
                     # net_topo = self.net_topos[asset_type]
                     net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
                     net_topo.add_edge(fid, rid)
-                    print('****NetTopo is {}'.format(net_topo))
+                    tcp_logger.info('********* Same Gateway: NetTopo is {}'.format(net_topo))
                     message = MessageMake.make_sync_graph_msg(
                         "add_whole_graph",
                         [channel_founder, channel_receiver],
@@ -349,6 +349,8 @@ class Gateway:
                     s_wallet.channel_balance[channel_name] = data["MessageBody"]["Balance"][channel_source][asset_type]
                     Nettopo.add_or_update(self.net_topos, asset_type, magic, s_wallet, channel_peer)
                     net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
+
+                    tcp_logger.info('********* Different Gateway: NetTopo is {}'.format(net_topo))
                 # peer is spv
                 if utils.check_is_spv(channel_peer):
                     if msg_type == "AddChannel":
@@ -460,7 +462,7 @@ class Gateway:
 
         if not same_gateway:
             return
-        ext_neighbors = net_topo.get_neighbors(network_trait, {})
+        ext_neighbors = net_topo.get_neighbors(network_trait)
         for ip, node_attr in ext_neighbors.items():
             for neighbor in node_attr.links:
                 receiver = neighbor + "@" + ip
