@@ -463,6 +463,8 @@ class Gateway:
         if not same_gateway:
             return
         ext_neighbors = net_topo.get_neighbors(network_trait)
+        if not ext_neighbors:
+            return True
         for ip, node_attr in ext_neighbors.items():
             for neighbor in node_attr.links:
                 receiver = neighbor + "@" + ip
