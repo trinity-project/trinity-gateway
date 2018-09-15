@@ -114,9 +114,12 @@ class Gateway:
                 peer_ip = "{}".format(peername[0])
                 # check sender is peer or not
                 # because 'tx message pass on siuatinon' sender may not peer
-                if peer_ip == utils.get_ip_port(sender).split(":")[0]:
+                if isinstance(sender, list):
+                    pass
+                elif peer_ip == utils.get_ip_port(sender).split(":")[0]:
                     sed_pk = utils.get_public_key(sender)
                     self.tcp_pk_dict[sed_pk] = protocol
+
                 if msg_type == "RegisterChannel":
                     wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
                     Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
