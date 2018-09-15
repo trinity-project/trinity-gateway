@@ -285,6 +285,7 @@ class Gateway:
                     # net_topo = self.net_topos[asset_type]
                     net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
                     net_topo.add_edge(fid, rid)
+                    print('****NetTopo is {}'.format(net_topo))
                     message = MessageMake.make_sync_graph_msg(
                         "add_whole_graph",
                         [channel_founder, channel_receiver],
@@ -562,7 +563,7 @@ class Gateway:
         for channel in channel_list:
             founder = channel.get("Founder")
             receiver = channel.get("Receiver")
-            magic = channel.get("NetMagic")
+            magic = channel.get("Magic")
             channel_name = channel.get("ChannelName")
             channel_peer = founder if wallet.url == receiver else receiver
             asset_type, channel_balance = list(channel["Balance"][wallet.public_key].items())[0]
