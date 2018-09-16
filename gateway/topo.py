@@ -66,7 +66,7 @@ def timethis(func):
         r = func(*args, **kwargs)
         end = time.process_time()
         # end = time.time()
-        gw_logger('{}.{} spend : {}ms'.format(func.__module__, func.__name__, (end - start) * 1000))
+        gw_logger.info('{}.{} spend : {}ms'.format(func.__module__, func.__name__, (end - start) * 1000))
         return r
     return wrapper
 
