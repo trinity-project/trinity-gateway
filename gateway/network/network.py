@@ -112,6 +112,8 @@ class Network:
         future = asyncio.ensure_future(
             AsyncJsonRpc.jsonrpc_request(method, data, addr)
         )
+        tcp_logger.info('future tasks is {}'.format(future))
+        tcp_logger.info('send message<{}> to wallet<{}> with callback<{}>. Data: {}'.format(method, addr, callback, data))
         if callback:
             import functools
             wrapped = functools.partial(callback, addr=addr)

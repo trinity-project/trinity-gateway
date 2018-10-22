@@ -25,6 +25,6 @@ cg_max_wallet_cli = 10
 ###### Gateway ######
 
 # only for debug control
-cg_debug = False
+cg_debug = True
 cg_debug_multi_ports = False
 cg_reused_tcp_connection = True
