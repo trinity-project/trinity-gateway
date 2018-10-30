@@ -33,7 +33,7 @@ if cg_debug:
 if not os.path.exists('./temp'):
     os.makedirs('./temp')
 
-access_file_handler = logging.handlers.TimedRotatingFileHandler('./temp/gateway.log')
+access_file_handler = logging.handlers.TimedRotatingFileHandler('./temp/gateway.log', when='d')
 
 # set log handler record level and filter
 access_file_handler.setLevel(logging.DEBUG)
