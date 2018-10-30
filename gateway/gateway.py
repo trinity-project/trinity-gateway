@@ -108,8 +108,10 @@ class Gateway:
                 # add debug here for investigate why the connection could not send the messages? connection broken??
                 try:
                     connection_sock = protocol.transport.get_extra_info('socket')
-                    keep_alive = connection_sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-                    tcp_logger.debug("use the transport with socket {}, keep alive: {}".format(connection_sock), keep_alive)
+                    keep_alive = None
+                    if connection_sock:
+                        keep_alive = connection_sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
+                    tcp_logger.debug("use the transport with socket {}, keep alive: {}".format(connection_sock, keep_alive))
                 except:
                     tcp_logger.debug("handle_node_request: use the transport {}".format(protocol.transport))
 
