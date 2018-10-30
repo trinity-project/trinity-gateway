@@ -1,6 +1,6 @@
 # coding: utf-8
 import time
-import os
+import os, socket
 import json
 import utils
 from _wallet import WalletClient
@@ -105,6 +105,14 @@ class Gateway:
                         Network.send_msg_with_jsonrpc("GetChannelList", addr, {})
                     return
 
+                # add debug here for investigate why the connection could not send the messages? connection broken??
+                try:
+                    connection_sock = protocol.transport.get_extra_info('socket')
+                    keep_alive = connection_sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
+                    tcp_logger.debug("use the transport with socket {}, keep alive: {}".format(connection_sock), keep_alive)
+                except:
+                    tcp_logger.debug("handle_node_request: use the transport {}".format(protocol.transport))
+
                 sender = data.get("Sender")
                 receiver = data.get("Receiver")
                 asset_type = data.get("AssetType")
@@ -118,6 +126,11 @@ class Gateway:
                     pass
                 elif peer_ip == utils.get_ip_port(sender).split(":")[0]:
                     sed_pk = utils.get_public_key(sender)
+                    # here, add keepalive for the connections
+                    connection_sock = protocol.transport.get_extra_info('socket')
+                    if connection_sock:
+                        connection_sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 30)
+
                     self.tcp_pk_dict[sed_pk] = protocol
 
                 if msg_type == "RegisterChannel":

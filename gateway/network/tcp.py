@@ -59,6 +59,12 @@ class TProtocol(Protocol):
                 tcp_logger.info("connect the server %s", peername)
             else:
                 tcp_logger.info("client %s connected", peername)
+
+        try:
+            tcp_logger.info("use the transport with socket {}".format(transport.get_extra_info('socket')))
+        except:
+            tcp_logger.info("use the transport {}".format(transport))
+
         tcp_manager.register(self)
 
     def data_received(self, data):
