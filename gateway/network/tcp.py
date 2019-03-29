@@ -44,6 +44,7 @@ class TProtocol(Protocol):
         # for wallet cli
         self.is_wallet_cli = False
         self.wallet_ip = None
+        self.wallet_protocol=None
     
     def connection_made(self, transport):
         self.state = "connected"
@@ -144,9 +145,18 @@ class TcpService:
         then communicate with the exist connection
         or create a new connection
         """
-        from gateway import gateway_singleton
         from utils import get_public_key
         pk = get_public_key(url)
+        return TcpService.find_connecion_by_pk(pk)
+
+    @staticmethod
+    def find_connecion_by_pk(pk):
+        """
+        has connected the host of the public key
+        then communicate with the exist connection
+        or create a new connection
+        """
+        from gateway import gateway_singleton
         exist_protocol = gateway_singleton.tcp_pk_dict.get(pk)
         if exist_protocol and exist_protocol.state == "connected":
             return exist_protocol.transport

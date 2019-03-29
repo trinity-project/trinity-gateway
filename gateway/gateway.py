@@ -99,6 +99,17 @@ class Gateway:
                 if msg_type == "RegisterKeepAlive":
                     protocol.is_wallet_cli = True
                     protocol.wallet_ip = data.get("Ip")
+                    protocol.wallet_protocol = date.get("Protocl")
+                    if  protocol.wallet_protocol and protocol.wallet_protocol.upper() == "TCP":
+                        pk = date.get("PublicKey")
+                        if not pk:
+                            tcp_logger.error("can not find the public key with socket {}".
+                                             format(protocol.transport.get_extra_info('socket')))
+                            return
+                        self.tcp_pk_dict[pk] = protocol
+                        msg = MessageMake.make_get_channel_list_msg()
+                        Network.send_msg_with_tcp(pk, msg)
+
                     if not len(self.net_topos.keys()):
                         ip, port = protocol.wallet_ip.split(":")
                         addr = (ip, int(port))
