@@ -9,6 +9,18 @@ from network import Network
 from message import Message, MessageMake
 from glog import tcp_logger, wst_logger, rpc_logger
 from config import cg_public_ip_port, cg_wsocket_addr
+from functools import wraps
+
+def wrap_protocol(func):
+    @wraps(func)
+    def wraper(*args,**kwargs):
+        msg = func(*args, **kwargs)
+        protocol = kwargs.get("protocol") or args[-1]=="TCP"
+        if protocol:
+            return Network.send_msg_with_tcp(protocol,msg)
+        else:
+            return msg
+    return wraper
 
 class Gateway:
     """
@@ -101,14 +113,9 @@ class Gateway:
                     protocol.wallet_ip = data.get("Ip")
                     protocol.wallet_protocol = date.get("Protocl")
                     if  protocol.wallet_protocol and protocol.wallet_protocol.upper() == "TCP":
-                        pk = date.get("PublicKey")
-                        if not pk:
-                            tcp_logger.error("can not find the public key with socket {}".
-                                             format(protocol.transport.get_extra_info('socket')))
-                            return
-                        self.tcp_pk_dict[pk] = protocol
-                        msg = MessageMake.make_get_channel_list_msg()
-                        Network.send_msg_with_tcp(pk, msg)
+                        return
+                    #     msg = MessageMake.make_get_channel_list_msg()
+                    #     Network.send_msg_with_tcp(protocol, msg)
 
                     if not len(self.net_topos.keys()):
                         ip, port = protocol.wallet_ip.split(":")
@@ -126,6 +133,11 @@ class Gateway:
                 except:
                     tcp_logger.debug("handle_node_request: use the transport {}".format(protocol.transport))
 
+                # handle wallet_cli tcp protocol
+                if protocol.is_wallet_cli :
+
+                    self.handle_wallet_request(msg_type, data, "TCP")
+
                 sender = data.get("Sender")
                 receiver = data.get("Receiver")
                 asset_type = data.get("AssetType")
@@ -133,7 +145,7 @@ class Gateway:
 
                 peername = protocol.transport.get_extra_info('peername')
                 peer_ip = "{}".format(peername[0])
-                # check sender is peer or not
+                # check sender is peer or note
                 # because 'tx message pass on siuatinon' sender may not peer
                 if isinstance(sender, list):
                     pass
@@ -149,9 +161,11 @@ class Gateway:
                 if msg_type == "RegisterChannel":
                     wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
                     Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+
                 elif msg_type in Message.get_tx_msg_types():
                     self.handle_transaction_message(data)
                     return utils.request_handle_result.get("correct")
+
                 elif msg_type == "ResumeChannel":
                     if not asset_type: return
                     net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
@@ -210,7 +224,8 @@ class Gateway:
                     node["Status"] = 0
                     sync_node_data_to_peer(node, net_topo)
 
-    def handle_wallet_request(self, method, params):
+    @wrap_protocol
+    def handle_wallet_request(self, method, params, protocol=None):
         data = params
         if type(data) == str:
             data = json.loads(data)

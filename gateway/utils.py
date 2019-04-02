@@ -198,7 +198,8 @@ def make_kwargs_for_wallet(data):
         "name": data.get("alias"),
         # "deposit": data.get("CommitMinDeposit"),
         "fee": fee_dict,
-        "balance": data.get("Balance")
+        "balance": data.get("Balance"),
+        "protocol":data.get("Protocol"),
     }
 
 def make_topo_node_data(wallet, asset_type):

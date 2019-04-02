@@ -82,14 +82,17 @@ class Network:
         def is_receiver_url(receiver):
             return True if  ":" in receiver else False
 
-        connection = TcpService.find_connection(receiver) if is_receiver_url(receiver) else \
-            TcpService.find_connecion_by_pk(receiver)
-        if connection and cg_reused_tcp_connection:
-            tcp_logger.info("find the exist connection to receiver<{}>".format(receiver))
-            connection.write(bdata)
+        if isinstance(receiver, TcpService):
+            receiver.write(bdata)
         else:
-            future = asyncio.ensure_future(TcpService.send_tcp_msg_coro(receiver, bdata))
-            future.add_done_callback(lambda t: t.exception())
+            connection = TcpService.find_connection(receiver) if is_receiver_url(receiver) else \
+                TcpService.find_connecion_by_pk(receiver)
+            if connection and cg_reused_tcp_connection:
+                tcp_logger.info("find the exist connection to receiver<{}>".format(receiver))
+                connection.write(bdata)
+            else:
+                future = asyncio.ensure_future(TcpService.send_tcp_msg_coro(receiver, bdata))
+                future.add_done_callback(lambda t: t.exception())
     
     @staticmethod
     def send_msg_with_wsocket(connection, data):
