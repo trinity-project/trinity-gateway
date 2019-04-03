@@ -76,7 +76,7 @@ class TProtocol(Protocol):
         # tcp_logger.info("receive %d bytes message from %s", body_size, self.get_peername())
         self.received = self.received + data
         # print(len(self.received))
-        # print(self.received)
+        print(self.received)
         while True:
             # print(len(self.received), self.header_size)
             if len(self.received) < self.header_size:

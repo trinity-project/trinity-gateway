@@ -99,8 +99,11 @@ class Gateway:
             Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
 
     def handle_node_request(self, protocol, bdata):
+        print("debug",protocol.is_wallet_cli)
         try:
+            print("debug", bdata)
             data = utils.decode_bytes(bdata)
+            print("debug",data)
         except UnicodeDecodeError:
             return utils.request_handle_result.get("invalid")
         else:
@@ -111,7 +114,7 @@ class Gateway:
                 if msg_type == "RegisterKeepAlive":
                     protocol.is_wallet_cli = True
                     protocol.wallet_ip = data.get("Ip")
-                    protocol.wallet_protocol = date.get("Protocl")
+                    protocol.wallet_protocol = data.get("Protocol")
                     if  protocol.wallet_protocol and protocol.wallet_protocol.upper() == "TCP":
                         return
                     #     msg = MessageMake.make_get_channel_list_msg()
@@ -135,8 +138,8 @@ class Gateway:
 
                 # handle wallet_cli tcp protocol
                 if protocol.is_wallet_cli :
-
-                    self.handle_wallet_request(msg_type, data, "TCP")
+                    print("debug",msg_type)
+                    self.handle_wallet_request(msg_type, data, protocol=protocol)
 
                 sender = data.get("Sender")
                 receiver = data.get("Receiver")

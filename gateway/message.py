@@ -53,7 +53,8 @@ class Message:
             "RegisterChannel",
             "RegisterKeepAlive",
             "SyncChannelState",
-            "ResumeChannel"
+            "ResumeChannel",
+            "SyncWalletData"
         ]
         valid_types = valid_types + cls.get_tx_msg_types()
         return valid_types

@@ -5,7 +5,7 @@ the module gather all protocols for trinity network communication
 import asyncio
 import uvloop
 import json
-from .tcp import TcpService
+from .tcp import TcpService,TProtocol
 from .jsonrpc import AsyncJsonRpc
 from .wsocket import WsocketService
 from config import cg_tcp_addr, cg_wsocket_addr, cg_public_ip_port, cg_local_jsonrpc_addr,\
@@ -82,8 +82,9 @@ class Network:
         def is_receiver_url(receiver):
             return True if  ":" in receiver else False
 
-        if isinstance(receiver, TcpService):
-            receiver.write(bdata)
+        if isinstance(receiver, TProtocol):
+            print(receiver)
+            receiver.transport.write(bdata)
         else:
             connection = TcpService.find_connection(receiver) if is_receiver_url(receiver) else \
                 TcpService.find_connecion_by_pk(receiver)
