@@ -134,7 +134,7 @@ class Gateway:
                     tcp_logger.debug("handle_node_request: use the transport {}".format(protocol.transport))
 
                 # handle wallet_cli tcp protocol
-                if protocol.is_wallet_cli :
+                if protocol.is_wallet_cli and protocol.wallet_protocol.upper() == "TCP":
                     print("debug",msg_type)
                     self.handle_wallet_request(msg_type, data, protocol=protocol)
 
