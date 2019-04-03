@@ -15,7 +15,7 @@ def wrap_protocol(func):
     @wraps(func)
     def wraper(*args,**kwargs):
         msg = func(*args, **kwargs)
-        protocol = kwargs.get("protocol") or args[-1]=="TCP"
+        protocol = kwargs.get("protocol")
         if protocol:
             return Network.send_msg_with_tcp(protocol,msg)
         else:
@@ -99,11 +99,8 @@ class Gateway:
             Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
 
     def handle_node_request(self, protocol, bdata):
-        print("debug",protocol.is_wallet_cli)
         try:
-            print("debug", bdata)
             data = utils.decode_bytes(bdata)
-            print("debug",data)
         except UnicodeDecodeError:
             return utils.request_handle_result.get("invalid")
         else:
@@ -229,6 +226,13 @@ class Gateway:
 
     @wrap_protocol
     def handle_wallet_request(self, method, params, protocol=None):
+        """
+
+        :param method:
+        :param params:
+        :param protocol: to adapte the tcp protocol neogui with gateway, must be used as dict
+        :return:
+        """
         data = params
         if type(data) == str:
             data = json.loads(data)
@@ -266,10 +270,11 @@ class Gateway:
                 **utils.make_kwargs_for_wallet(body)
             )
             if add: utils.save_wallet_cli(self.wallet_clients)
-            self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic)
+            self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic, protocol)
             spv_ip_port = "{}:{}".format(cg_wsocket_addr[0], cg_wsocket_addr[1])
             response = MessageMake.make_ack_sync_wallet_msg(wallet.url, spv_ip_port)
             # self.detect_wallet_client_status()
+            print("debug",json.dumps(response))
             return json.dumps(response)
         elif method == "SyncBlock":
             sender = data.get("Sender")
@@ -564,7 +569,7 @@ class Gateway:
                 node["Status"] = 0
                 sync_node_data_to_peer(node, net_topo)
 
-    def handle_wallet_cli_on_line(self, wallet, last_opened_wallet_pk, magic):
+    def handle_wallet_cli_on_line(self, wallet, last_opened_wallet_pk, magic, protocol=None):
         """
         cli on_line just mean:\n
         the cli call the `open wallet xxx` command\n
@@ -574,7 +579,11 @@ class Gateway:
         if not len(self.net_topos.keys()):
             ip, port = cli_ip.split(":")
             addr = (ip, int(port))
-            Network.send_msg_with_jsonrpc("GetChannelList", addr, {})
+            if protocol:
+                msg = MessageMake.make_get_channel_list_msg()
+                Network.send_msg_with_tcp(protocol, msg)
+            else:
+                Network.send_msg_with_jsonrpc("GetChannelList", addr, {})
         # wallet cli on-line
         
         pk = wallet.public_key

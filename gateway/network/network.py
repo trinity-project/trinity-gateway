@@ -78,6 +78,7 @@ class Network:
         :param data: dict type
         """
         # time.sleep(0.05)
+        print("debug########",data)
         bdata = encode_bytes(data)
         def is_receiver_url(receiver):
             return True if  ":" in receiver else False
