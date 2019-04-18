@@ -77,20 +77,24 @@ class TProtocol(Protocol):
         # print(len(self.received))
         # print(self.received)
         while True:
-            # print(len(self.received), self.header_size)
-            if len(self.received) < self.header_size:
-                return
-            header_pack = struct.unpack("!3I", self.received[:self.header_size])
-            # print("header_pack:", header_pack)
-            body_size = header_pack[1]
-            if header_pack[0] + header_pack[2] != 102:
-                return
-            # print(body_size)
-            # package split situation
-            if len(self.received) < self.header_size + body_size:
-                return
-            body = self.received[self.header_size:self.header_size+body_size]
-            tcp_logger.info("receive %d bytes message from %s", body_size, self.get_peername())
+            try:
+                # print(len(self.received), self.header_size)
+                if len(self.received) < self.header_size:
+                    return
+                header_pack = struct.unpack("!3I", self.received[:self.header_size])
+                # print("header_pack:", header_pack)
+                body_size = header_pack[1]
+                if header_pack[0] + header_pack[2] != 102:
+                    raise
+                # print(body_size)
+                # package split situation
+                if len(self.received) < self.header_size + body_size:
+                    return
+                body = self.received[self.header_size:self.header_size+body_size]
+            except Exception as error:
+                body_size = len(self.received)
+                body = self.received
+            tcp_logger.info("TCPProtocol: receive %d bytes message from %s", body_size, self.get_peername())
             tcp_logger.debug(">>>> %s <<<<", body)
             from gateway import gateway_singleton
             result = gateway_singleton.handle_node_request(self, body)
