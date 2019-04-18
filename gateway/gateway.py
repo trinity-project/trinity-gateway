@@ -147,6 +147,9 @@ class Gateway:
                 # handle wallet_cli tcp protocol
                 if protocol.is_wallet_cli and protocol.wallet_protocol.upper() == "TCP":
                     print("debug",msg_type)
+                    if msg_type in Message.get_tx_msg_types():
+                        msg_type = "TransactionMessage"
+
                     self.handle_wallet_request(msg_type, data, protocol=protocol)
 
                 sender = data.get("Sender")
