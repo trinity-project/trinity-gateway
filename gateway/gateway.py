@@ -288,6 +288,8 @@ class Gateway:
                 self.wallet_clients,
                 **utils.make_kwargs_for_wallet(body)
             )
+
+            tcp_logger.debug("Add wallet to clients: {}. Clients: {}".format(add, self.wallet_clients))
             if add: utils.save_wallet_cli(self.wallet_clients)
             self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic, protocol)
             spv_ip_port = "{}:{}".format(cg_wsocket_addr[0], cg_wsocket_addr[1])
@@ -566,6 +568,7 @@ class Gateway:
         # to self's wallet(wallets that attached this gateway)
         else:
             owned, wallet_state = utils.check_is_owned_wallet(receiver, self.wallet_clients)
+            tcp_logger.debug("Receiver: {} is found in clients {}".format(receiver, self.wallet_clients))
             if wallet_state:
                 pk = utils.get_public_key(receiver)
                 protocol = self.tcp_pk_dict.get(pk)
