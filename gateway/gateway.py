@@ -147,9 +147,6 @@ class Gateway:
                 # handle wallet_cli tcp protocol
                 if protocol.is_wallet_cli and protocol.wallet_protocol.upper() == "TCP":
                     print("debug",msg_type)
-                    if msg_type in Message.get_tx_msg_types():
-                        msg_type = "TransactionMessage"
-
                     self.handle_wallet_request(msg_type, data, protocol=protocol)
 
                 sender = data.get("Sender")
@@ -173,8 +170,9 @@ class Gateway:
                     self.tcp_pk_dict[sed_pk] = protocol
 
                 if msg_type == "RegisterChannel":
+                    print("Handle Node request, Protoc")
                     if protocol:
-                        Network.send_msg_with_tcp(protocol,data)
+                        Network.send_msg_with_tcp(receiver,data)
                     else:
                         wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
                         Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
@@ -326,6 +324,7 @@ class Gateway:
             rev = data.get("Receiver")
             rev_pk, rev_ip_port = utils.parse_url(rev)
             if msg_type == "RegisterChannel":
+                print("Handle wallet request, RegisterChannel")
                 if utils.check_is_spv(rev):
                     Network.send_msg_with_wsocket(self.ws_pk_dict.get(rev_pk), data)
                 else:

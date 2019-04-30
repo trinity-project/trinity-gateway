@@ -66,7 +66,7 @@ class TProtocol(Protocol):
             keep_alive = None
             if connection_sock:
                 keep_alive = connection_sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
-            tcp_logger.info("use the transport with socket {}, keep alive {}".format(connection_sock, keep_alive))
+            tcp_logger.info("TCPProtocol: use the transport with socket {}, keep alive {}".format(connection_sock, keep_alive))
         except:
             tcp_logger.info("use the transport {}".format(transport))
 
@@ -165,6 +165,21 @@ class TcpService:
         exist_protocol = gateway_singleton.tcp_pk_dict.get(pk)
         if exist_protocol and exist_protocol.state == "connected":
             return exist_protocol.transport
+        # disconnected
+        else:
+            return None
+
+    @staticmethod
+    def find_protocol_by_pk(pk):
+        """
+        has connected the host of the public key
+        then communicate with the exist connection
+        or create a new connection
+        """
+        from gateway import gateway_singleton
+        exist_protocol = gateway_singleton.tcp_pk_dict.get(pk)
+        if exist_protocol and exist_protocol.state == "connected":
+            return exist_protocol
         # disconnected
         else:
             return None

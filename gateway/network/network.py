@@ -87,11 +87,17 @@ class Network:
             print(receiver)
             receiver.transport.write(bdata)
         else:
-            connection = TcpService.find_connection(receiver) if is_receiver_url(receiver) else \
-                TcpService.find_connecion_by_pk(receiver)
+            #connection = TcpService.find_connection(receiver) if is_receiver_url(receiver) else \
+            #   TcpService.find_protocol_by_pk(receiver)
+            if is_receiver_url(receiver):
+                connection = TcpService.find_protocol_by_pk(receiver.split("@")[0])
+            else:
+                connection = TcpService.find_protocol_by_pk(receiver)
+
+            tcp_logger.info("find tcp connection {}, {}".format(connection, cg_reused_tcp_connection))
             if connection and cg_reused_tcp_connection:
                 tcp_logger.info("find the exist connection to receiver<{}>".format(receiver))
-                connection.write(bdata)
+                connection.transport.write(bdata)
             else:
                 future = asyncio.ensure_future(TcpService.send_tcp_msg_coro(receiver, bdata))
                 future.add_done_callback(lambda t: t.exception())
