@@ -259,6 +259,7 @@ class Gateway:
             data = json.loads(data)
         # rpc_logger.info("<-- receiver data : {}".format(data))
         msg_type = data.get("MessageType")
+        sender = data.get("Sender")
         if method == "Search":
             public_key = data.get("Publickey")
             asset_type = data.get("AssetType")
@@ -291,6 +292,15 @@ class Gateway:
                 **utils.make_kwargs_for_wallet(body)
             )
 
+            if sender is not None:
+                sed_pk = sender.split("@")[0]
+
+                if not self.tcp_pk_dict.__contains__(sed_pk):
+                    self.tcp_pk_dict[sed_pk]
+                    tcp_logger.info("SyncWalletData: record tcp connection {} for sender {}".format(protocol, sender))
+                else:
+                    tcp_logger.debug("Use legacy connection: {}".format(self.tcp_pk_dict[sed_pk]))
+                    
             tcp_logger.debug("Add wallet to clients: {}. Clients: {}".format(add, self.wallet_clients))
             if add: utils.save_wallet_cli(self.wallet_clients)
             self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic, protocol)
@@ -307,7 +317,7 @@ class Gateway:
             return "OK"
         elif method == "GetRouterInfo":
             rpc_logger.info("Get the wallet router info request:\n{}".format(data))
-            sender = data.get("Sender")
+
             receiver = data.get("Receiver")
             body = data.get("MessageBody")
             asset_type = body.get("AssetType")
