@@ -294,12 +294,8 @@ class Gateway:
 
             if sender is not None:
                 sed_pk = sender.split("@")[0]
-
-                if not self.tcp_pk_dict.__contains__(sed_pk):
-                    self.tcp_pk_dict[sed_pk] = protocol
-                    tcp_logger.info("SyncWalletData: record tcp connection {} for sender {}".format(protocol, sender))
-                else:
-                    tcp_logger.debug("Use legacy connection: {}".format(self.tcp_pk_dict[sed_pk]))
+                self.tcp_pk_dict[sed_pk] = protocol
+                tcp_logger.info("SyncWalletData: record tcp connection {} for sender {}".format(protocol, sender))
 
             tcp_logger.debug("Add wallet to clients: {}. Clients: {}".format(add, self.wallet_clients))
             if add: utils.save_wallet_cli(self.wallet_clients)
