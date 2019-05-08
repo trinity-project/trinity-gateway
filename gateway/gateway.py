@@ -167,12 +167,14 @@ class Gateway:
                     if connection_sock:
                         connection_sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 30)
 
-                    self.tcp_pk_dict[sed_pk] = protocol
+                    if not self.tcp_pk_dict.__contains__(sed_pk):
+                        tcp_logger("Add {} with connection {}".format(sed_pk, protocol))
+                        self.tcp_pk_dict[sed_pk] = protocol
+
 
                 if msg_type == "RegisterChannel":
-                    print("Handle Node request, Protoc")
                     if protocol:
-                        Network.send_msg_with_tcp(receiver,data)
+                        Network.send_msg_with_tcp(receiver, data)
                     else:
                         wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
                         Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
