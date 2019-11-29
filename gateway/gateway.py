@@ -299,9 +299,10 @@ class Gateway:
 
             tcp_logger.debug("Add wallet to clients: {}. Clients: {}".format(add, self.wallet_clients))
             if add: utils.save_wallet_cli(self.wallet_clients)
-            self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic, protocol)
+
             spv_ip_port = "{}:{}".format(cg_wsocket_addr[0], cg_wsocket_addr[1])
             response = MessageMake.make_ack_sync_wallet_msg(wallet.url, spv_ip_port)
+            self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic, protocol)
             # self.detect_wallet_client_status()
             return json.dumps(response)
         elif method == "SyncBlock":
