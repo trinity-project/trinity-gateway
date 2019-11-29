@@ -14,6 +14,7 @@ from asyncio import ensure_future
 from utils import encode_bytes
 from glog import tcp_logger, wst_logger
 import time
+import functools
 
 class Network:
     """
@@ -130,7 +131,7 @@ class Network:
         tcp_logger.info('future tasks is {}'.format(future))
         tcp_logger.info('send message<{}> to wallet<{}> with callback<{}>. Data: {}'.format(method, addr, callback, data))
         if callback:
-            import functools
+            
             wrapped = functools.partial(callback, addr=addr)
             future.add_done_callback(wrapped)
         else:
