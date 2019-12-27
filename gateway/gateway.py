@@ -160,7 +160,7 @@ class Gateway:
                 # because 'tx message pass on siuatinon' sender may not peer
                 if isinstance(sender, list):
                     pass
-                elif peer_ip == utils.get_ip_port(sender).split(":")[0]:
+                elif peer_ip == utils.get_ip_port(sender).split(":",1)[0]:
                     sed_pk = utils.get_public_key(sender)
                     # here, add keepalive for the connections
                     connection_sock = protocol.transport.get_extra_info('socket')
@@ -241,7 +241,7 @@ class Gateway:
             net_topo = self.net_topos[key]
             for nid in net_topo.get_nodes():
                 node = net_topo.get_node_dict(nid)
-                if node["Ip"].split(":")[0] == ip:
+                if node["Ip"].rsplit(":",1)[0] == ip:
                     node["Status"] = 0
                     sync_node_data_to_peer(node, net_topo)
 
@@ -613,7 +613,7 @@ class Gateway:
         cli_ip = wallet.cli_ip
         pk = wallet.public_key
         if not len(self.net_topos.keys()):
-            ip, port = cli_ip.split(":")
+            ip, port = cli_ip.rsplit(":",1)
             addr = (ip, int(port))
             if protocol:
                 self.tcp_pk_dict[pk] = protocol
@@ -713,7 +713,7 @@ class Gateway:
         # clis.append("47.254.39.10:21556")
         for cli in clis:
             try:
-                ip, port = cli.split(":")
+                ip, port = cli.rsplit(":",1)
                 addr = (ip, int(port))
             except Exception:
                 continue

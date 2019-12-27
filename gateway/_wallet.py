@@ -108,10 +108,10 @@ class WalletClient:
     
     def __init__(self, ip):
         try:
-            addr = (ip.split(":")[0], int(ip.split(":")[1]))
+            addr = (ip.rsplit(":",1)[0], int(ip.rsplit(":",1)[1]))
         except Exception:
             ip = _get_default_ip()
-            addr = (ip.split(":")[0], int(ip.split(":")[1]))
+            addr = (ip.rsplit(":",1)[0], int(ip.rsplit(":",1)[1]))
             print("!!! ip format error, use the default ip: {} !!!".format(ip))
         finally:
             self.addr = addr

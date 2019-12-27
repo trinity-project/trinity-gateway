@@ -73,7 +73,7 @@ def get_wallet_addr(url, clients):
     pk = get_public_key(url)
     wallet = get_all_active_wallet_dict(clients).get(pk)
     if wallet:
-        ip, port = wallet.cli_ip.split(":")
+        ip, port = wallet.cli_ip.rsplit(":",1)
         wallet_addr = (ip, int(port))
     else:
         wallet_addr = ("0.0.0.0", 0)
@@ -170,7 +170,7 @@ def get_ip_port(url):
     return url.split("@")[1]
 
 def get_addr(url):
-    ip_port = (url.split("@")[1]).split(":")
+    ip_port = (url.split("@")[1]).rsplit(":",1)
     return (ip_port[0], int(ip_port[1]))
 
 def parse_url(url):
