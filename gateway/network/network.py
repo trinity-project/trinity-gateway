@@ -5,7 +5,7 @@ the module gather all protocols for trinity network communication
 import asyncio
 import uvloop
 import json
-from .tcp import TcpService
+from .tcp import TcpService,TProtocol
 from .jsonrpc import AsyncJsonRpc
 from .wsocket import WsocketService
 from config import cg_tcp_addr, cg_wsocket_addr, cg_public_ip_port, cg_local_jsonrpc_addr,\
@@ -14,6 +14,7 @@ from asyncio import ensure_future
 from utils import encode_bytes
 from glog import tcp_logger, wst_logger
 import time
+import functools
 
 class Network:
     """
@@ -78,14 +79,29 @@ class Network:
         :param data: dict type
         """
         # time.sleep(0.05)
+        print("debug########",data)
         bdata = encode_bytes(data)
-        connection = TcpService.find_connection(receiver)
-        if connection and cg_reused_tcp_connection:
-            tcp_logger.info("find the exist connection to receiver<{}>".format(receiver))
-            connection.write(bdata)
+        def is_receiver_url(receiver):
+            return True if  ":" in receiver else False
+
+        if isinstance(receiver, TProtocol):
+            print(receiver)
+            receiver.transport.write(bdata)
         else:
-            future = asyncio.ensure_future(TcpService.send_tcp_msg_coro(receiver, bdata))
-            future.add_done_callback(lambda t: t.exception())
+            #connection = TcpService.find_connection(receiver) if is_receiver_url(receiver) else \
+            #   TcpService.find_protocol_by_pk(receiver)
+            if is_receiver_url(receiver):
+                connection = TcpService.find_protocol_by_pk(receiver.split("@")[0])
+            else:
+                connection = TcpService.find_protocol_by_pk(receiver)
+
+            tcp_logger.info("find tcp connection {}, {}".format(connection, cg_reused_tcp_connection))
+            if connection and cg_reused_tcp_connection:
+                tcp_logger.info("find the exist connection to receiver<{}>".format(receiver))
+                connection.transport.write(bdata)
+            else:
+                future = asyncio.ensure_future(TcpService.send_tcp_msg_coro(receiver, bdata))
+                future.add_done_callback(lambda t: t.exception())
     
     @staticmethod
     def send_msg_with_wsocket(connection, data):
@@ -115,15 +131,15 @@ class Network:
         tcp_logger.info('future tasks is {}'.format(future))
         tcp_logger.info('send message<{}> to wallet<{}> with callback<{}>. Data: {}'.format(method, addr, callback, data))
         if callback:
-            import functools
+            
             wrapped = functools.partial(callback, addr=addr)
             future.add_done_callback(wrapped)
         else:
             future.add_done_callback(lambda t: t.exception())
+
 
     @staticmethod
     def send_msg_with_jsonrpc_sync(method, addr, data):
         data = json.dumps(data)
         res = AsyncJsonRpc.jsonrpc_request_sync(method, data, addr)
         return json.loads(res) if res else res
-  

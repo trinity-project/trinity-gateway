@@ -53,7 +53,8 @@ class Message:
             "RegisterChannel",
             "RegisterKeepAlive",
             "SyncChannelState",
-            "ResumeChannel"
+            "ResumeChannel",
+            "SyncWalletData"
         ]
         valid_types = valid_types + cls.get_tx_msg_types()
         return valid_types
@@ -260,3 +261,29 @@ class MessageMake:
             "Reason": kwargs.get("reason")
         }
         return message
+
+    @staticmethod
+    def make_get_channel_list_msg():
+        """
+
+        :return:
+        """
+        messagebody = {"MessageBody":None}
+        return MessageMake.add_message_header(messagebody,"GetChannelList")
+
+
+    @staticmethod
+    def add_message_header(msg, msg_type, version="1.0", portocol="TCP"):
+        """
+
+        :param msg_type: message type
+        :param version:  version info
+        :param portocol:  connection porotocl
+        :return:
+        """
+
+        msg["MessageType"]= msg_type
+        msg["Version"]= version
+        msg["Protocol"]=portocol
+        return msg
+

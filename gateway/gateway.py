@@ -9,6 +9,18 @@ from network import Network
 from message import Message, MessageMake
 from glog import tcp_logger, wst_logger, rpc_logger
 from config import cg_public_ip_port, cg_wsocket_addr
+from functools import wraps
+
+def wrap_protocol(func):
+    @wraps(func)
+    def wraper(*args,**kwargs):
+        msg = func(*args, **kwargs)
+        protocol = kwargs.get("protocol")
+        if protocol:
+            return Network.send_msg_with_tcp(protocol,msg)
+        else:
+            return msg
+    return wraper
 
 class Gateway:
     """
@@ -25,7 +37,7 @@ class Gateway:
     def start(self):
         Network.create_servers()
         print("###### Trinity Gateway Start Successfully! ######")
-        self.notifica_walelt_clis_on_line()
+        #self.notifica_walelt_clis_on_line() all the cli have the tcp connection to detecet the alive ,so no need nofication
         Network.run_servers_forever()
 
     def clearn(self):
@@ -44,18 +56,26 @@ class Gateway:
         asset_type = data.get("AssetType")
         magic = data.get("NetMagic")
         spv_pk = utils.get_public_key(sender)
+        receiver_pk = utils.get_public_key(receiver)
+        protocol = self.tcp_pk_dict.get(receiver_pk)
         self.ws_pk_dict[spv_pk] = websocket
         if msg_type == "RegisterChannel":
             owned, wallet_state = utils.check_is_owned_wallet(receiver, self.wallet_clients)
             if not (owned and wallet_state): return
-            wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
-            Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+            if protocol:
+                Network.send_msg_with_tcp(protocol,data)
+            else:
+                wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
+                Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
         # first check the receiver is self or not
         if msg_type == "PaymentLink":
             owned, wallet_state = utils.check_is_owned_wallet(receiver, self.wallet_clients)
             if not (owned and wallet_state): return
             wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
-            Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+            if protocol:
+                Network.send_msg_with_tcp(protocol,data)
+            else:
+                Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
         elif msg_type in Message.get_tx_msg_types():
             self.handle_transaction_message(data)
         elif msg_type == "CombinationTransaction":
@@ -83,8 +103,11 @@ class Gateway:
             message = MessageMake.make_ack_channel_info(spv_peers)
             Network.send_msg_with_wsocket(websocket, message)
         elif msg_type == "UpdateChannel":
-            wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
-            Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+            if protocol:
+                Network.send_msg_with_tcp(protocol,data)
+            else:
+                wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
+                Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
 
     def handle_node_request(self, protocol, bdata):
         try:
@@ -99,6 +122,12 @@ class Gateway:
                 if msg_type == "RegisterKeepAlive":
                     protocol.is_wallet_cli = True
                     protocol.wallet_ip = data.get("Ip")
+                    protocol.wallet_protocol = data.get("Protocol")
+                    if  protocol.wallet_protocol and protocol.wallet_protocol.upper() == "TCP":
+                        return
+                    #     msg = MessageMake.make_get_channel_list_msg()
+                    #     Network.send_msg_with_tcp(protocol, msg)
+
                     if not len(self.net_topos.keys()):
                         ip, port = protocol.wallet_ip.split(":")
                         addr = (ip, int(port))
@@ -115,6 +144,11 @@ class Gateway:
                 except:
                     tcp_logger.debug("handle_node_request: use the transport {}".format(protocol.transport))
 
+                # handle wallet_cli tcp protocol
+                if protocol.is_wallet_cli and protocol.wallet_protocol.upper() == "TCP":
+                    print("debug",msg_type)
+                    self.handle_wallet_request(msg_type, data, protocol=protocol)
+
                 sender = data.get("Sender")
                 receiver = data.get("Receiver")
                 asset_type = data.get("AssetType")
@@ -122,25 +156,33 @@ class Gateway:
 
                 peername = protocol.transport.get_extra_info('peername')
                 peer_ip = "{}".format(peername[0])
-                # check sender is peer or not
+                # check sender is peer or note
                 # because 'tx message pass on siuatinon' sender may not peer
                 if isinstance(sender, list):
                     pass
-                elif peer_ip == utils.get_ip_port(sender).split(":")[0]:
+                elif peer_ip == utils.get_ip_port(sender).split(":",1)[0]:
                     sed_pk = utils.get_public_key(sender)
                     # here, add keepalive for the connections
                     connection_sock = protocol.transport.get_extra_info('socket')
                     if connection_sock:
                         connection_sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 30)
 
-                    self.tcp_pk_dict[sed_pk] = protocol
+                    if not self.tcp_pk_dict.__contains__(sed_pk):
+                        tcp_logger("Add {} with connection {}".format(sed_pk, protocol))
+                        self.tcp_pk_dict[sed_pk] = protocol
+
 
                 if msg_type == "RegisterChannel":
-                    wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
-                    Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+                    if protocol:
+                        Network.send_msg_with_tcp(receiver, data)
+                    else:
+                        wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
+                        Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+
                 elif msg_type in Message.get_tx_msg_types():
                     self.handle_transaction_message(data)
                     return utils.request_handle_result.get("correct")
+
                 elif msg_type == "ResumeChannel":
                     if not asset_type: return
                     net_topo = self.net_topos.get(utils.asset_type_magic_patch(asset_type, magic))
@@ -185,6 +227,10 @@ class Gateway:
                             data["Sender"] = receiver
                             self.sync_channel_route_to_peer(data)
                             return utils.request_handle_result.get("correct")
+                    elif msg_type == "GetChannelListAck":
+                        rpc_logger.info("Handle GetChannelListAck message:\n{}".format(data))
+                        msg_body = data.get("MessageBody")
+                        self.handle_channel_list_message(msg_body)
                     else:
                         tcp_logger.error("!!!!!! the receiver or asset_type or magic not provied in the sync channel msg !!!!!!")
                         return
@@ -195,16 +241,25 @@ class Gateway:
             net_topo = self.net_topos[key]
             for nid in net_topo.get_nodes():
                 node = net_topo.get_node_dict(nid)
-                if node["Ip"].split(":")[0] == ip:
+                if node["Ip"].rsplit(":",1)[0] == ip:
                     node["Status"] = 0
                     sync_node_data_to_peer(node, net_topo)
 
-    def handle_wallet_request(self, method, params):
+    @wrap_protocol
+    def handle_wallet_request(self, method, params, protocol=None):
+        """
+
+        :param method:
+        :param params:
+        :param protocol: to adapte the tcp protocol neogui with gateway, must be used as dict
+        :return:
+        """
         data = params
         if type(data) == str:
             data = json.loads(data)
         # rpc_logger.info("<-- receiver data : {}".format(data))
         msg_type = data.get("MessageType")
+        sender = data.get("Sender")
         if method == "Search":
             public_key = data.get("Publickey")
             asset_type = data.get("AssetType")
@@ -236,10 +291,18 @@ class Gateway:
                 self.wallet_clients,
                 **utils.make_kwargs_for_wallet(body)
             )
+
+            if sender is not None:
+                sed_pk = sender.split("@")[0]
+                self.tcp_pk_dict[sed_pk] = protocol
+                tcp_logger.info("SyncWalletData: record tcp connection {} for sender {}".format(protocol, sender))
+
+            tcp_logger.debug("Add wallet to clients: {}. Clients: {}".format(add, self.wallet_clients))
             if add: utils.save_wallet_cli(self.wallet_clients)
-            self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic)
+
             spv_ip_port = "{}:{}".format(cg_wsocket_addr[0], cg_wsocket_addr[1])
             response = MessageMake.make_ack_sync_wallet_msg(wallet.url, spv_ip_port)
+            self.handle_wallet_cli_on_line(wallet, last_opened_wallet_pk, magic, protocol)
             # self.detect_wallet_client_status()
             return json.dumps(response)
         elif method == "SyncBlock":
@@ -251,7 +314,7 @@ class Gateway:
             return "OK"
         elif method == "GetRouterInfo":
             rpc_logger.info("Get the wallet router info request:\n{}".format(data))
-            sender = data.get("Sender")
+
             receiver = data.get("Receiver")
             body = data.get("MessageBody")
             asset_type = body.get("AssetType")
@@ -272,6 +335,7 @@ class Gateway:
             rev = data.get("Receiver")
             rev_pk, rev_ip_port = utils.parse_url(rev)
             if msg_type == "RegisterChannel":
+                print("Handle wallet request, RegisterChannel")
                 if utils.check_is_spv(rev):
                     Network.send_msg_with_wsocket(self.ws_pk_dict.get(rev_pk), data)
                 else:
@@ -513,10 +577,15 @@ class Gateway:
         # to self's wallet(wallets that attached this gateway)
         else:
             owned, wallet_state = utils.check_is_owned_wallet(receiver, self.wallet_clients)
+            tcp_logger.debug("Receiver: {} is found in clients {}".format(receiver, self.wallet_clients))
             if wallet_state:
-                # pk = utils.get_public_key(receiver)
-                wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
-                Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
+                pk = utils.get_public_key(receiver)
+                protocol = self.tcp_pk_dict.get(pk)
+                if protocol:
+                    Network.send_msg_with_tcp(protocol, data)
+                else:
+                    wallet_addr = utils.get_wallet_addr(receiver, self.wallet_clients)
+                    Network.send_msg_with_jsonrpc("TransactionMessage", wallet_addr, data)
             elif owned:
                 # drop this message because the wallet is closed or exit.
                 tcp_logger.warn('Drop message because wallet is not on OPENED state.')
@@ -535,21 +604,26 @@ class Gateway:
                 node["Status"] = 0
                 sync_node_data_to_peer(node, net_topo)
 
-    def handle_wallet_cli_on_line(self, wallet, last_opened_wallet_pk, magic):
+    def handle_wallet_cli_on_line(self, wallet, last_opened_wallet_pk, magic, protocol=None):
         """
         cli on_line just mean:\n
         the cli call the `open wallet xxx` command\n
         as it may `switch in diffrent wallets` so need check and handle that case\n 
         """
         cli_ip = wallet.cli_ip
-        if not len(self.net_topos.keys()):
-            ip, port = cli_ip.split(":")
-            addr = (ip, int(port))
-            Network.send_msg_with_jsonrpc("GetChannelList", addr, {})
-        # wallet cli on-line
-        
         pk = wallet.public_key
+        if not len(self.net_topos.keys()):
+            ip, port = cli_ip.rsplit(":",1)
+            addr = (ip, int(port))
+            if protocol:
+                self.tcp_pk_dict[pk] = protocol
+                msg = MessageMake.make_get_channel_list_msg()
+                Network.send_msg_with_tcp(protocol, msg)
+            else:
+                Network.send_msg_with_jsonrpc("GetChannelList", addr, {})
+        # wallet cli on-line
         self.wallet_clients[cli_ip].on_line()
+
         # self._handle_switch_wallets(last_opened_wallet_pk, magic)
         for key in self.net_topos:
             net_topo = self.net_topos[key]
@@ -639,7 +713,7 @@ class Gateway:
         # clis.append("47.254.39.10:21556")
         for cli in clis:
             try:
-                ip, port = cli.split(":")
+                ip, port = cli.rsplit(":",1)
                 addr = (ip, int(port))
             except Exception:
                 continue
